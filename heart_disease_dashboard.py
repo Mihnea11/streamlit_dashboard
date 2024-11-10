@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from ucimlrepo import fetch_ucirepo
+from typing import List, Tuple
 
 # Set Streamlit style settings
 st.set_page_config(page_title="Heart Disease Dashboard", layout="wide")
@@ -15,18 +16,18 @@ st.markdown("""
 
 # Fetch Heart Disease dataset, features, and target
 heart_disease = fetch_ucirepo(id=45)
-features = heart_disease.data.features
-target = heart_disease.data.targets
-metadata = heart_disease.variables
+features: pd.DataFrame = heart_disease.data.features
+target: pd.DataFrame = heart_disease.data.targets
+metadata: pd.DataFrame = heart_disease.variables
 
 # Set column names based on metadata
-feature_names = metadata[metadata["role"] == "Feature"]["name"].tolist()
-target_name = metadata[metadata["role"] == "Target"]["name"].values[0]
+feature_names: List[str] = metadata[metadata["role"] == "Feature"]["name"].tolist()
+target_name: str = metadata[metadata["role"] == "Target"]["name"].values[0]
 features.columns = feature_names
 target.columns = [target_name]
 
 # Combine features and target into a single DataFrame for ease of use
-data = pd.concat([features, target], axis=1)
+data: pd.DataFrame = pd.concat([features, target], axis=1)
 
 # Dashboard Title
 st.title("🫀 Heart Disease Dataset Dashboard")
@@ -34,11 +35,11 @@ st.markdown("Explore and analyze the Heart Disease dataset interactively.")
 
 # Sidebar Filters
 st.sidebar.header("Filter Options")
-age_filter = st.sidebar.slider("Age Range:", int(data["age"].min()), int(data["age"].max()), (int(data["age"].min()), int(data["age"].max())))
-target_filter = st.sidebar.multiselect("Diagnosis Outcome:", options=sorted(data[target_name].unique()), default=sorted(data[target_name].unique()))
+age_filter: Tuple[int, int] = st.sidebar.slider("Age Range:", int(data["age"].min()), int(data["age"].max()), (int(data["age"].min()), int(data["age"].max())))
+target_filter: List[int] = st.sidebar.multiselect("Diagnosis Outcome:", options=sorted(data[target_name].unique()), default=sorted(data[target_name].unique()))
 
 # Filter Data
-filtered_data = data[(data["age"] >= age_filter[0]) & (data["age"] <= age_filter[1])]
+filtered_data: pd.DataFrame = data[(data["age"] >= age_filter[0]) & (data["age"] <= age_filter[1])]
 filtered_data = filtered_data[filtered_data[target_name].isin(target_filter)]
 
 # Layout of the Dashboard
@@ -60,13 +61,13 @@ st.pyplot(fig)
 
 # Interactive Histograms for Integer Features with Side-by-Side Layout and Empty Placeholders
 st.header("Feature Histograms")
-int_vars = metadata[metadata["type"] == "Integer"]["name"].tolist()
-selected_features = st.multiselect("Select Integer Features for Histograms:", int_vars, default=int_vars[:3])
+int_vars: List[str] = metadata[metadata["type"] == "Integer"]["name"].tolist()
+selected_features: List[str] = st.multiselect("Select Integer Features for Histograms:", int_vars, default=int_vars[:3])
 
 # Display histograms side-by-side in rows of up to 3 plots, with empty placeholders if necessary
 if selected_features:
-    num_cols = 3
-    num_rows = -(-len(selected_features) // num_cols)
+    num_cols: int = 3
+    num_rows: int = -(-len(selected_features) // num_cols)
     fig, axes = plt.subplots(num_rows, num_cols, figsize=(15, 4 * num_rows))
     fig.subplots_adjust(hspace=0.5)
     axes = axes.flatten()
@@ -87,9 +88,9 @@ fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 # Select X and Y axes for scatter plot
 col1, col2 = st.columns(2)
 with col1:
-    x_axis = st.selectbox("Select X-axis Variable:", feature_names)
+    x_axis: str = st.selectbox("Select X-axis Variable:", feature_names)
 with col2:
-    y_axis = st.selectbox("Select Y-axis Variable:", feature_names)
+    y_axis: str = st.selectbox("Select Y-axis Variable:", feature_names)
 
 # Add scatter plot to center subplot, with placeholders on the left and right
 axes[0].axis('off')
@@ -101,8 +102,8 @@ st.pyplot(fig)
 
 # Categorical Feature Counts with Side-by-Side Layout and Empty Placeholders
 st.header("Categorical Feature Counts")
-cat_vars = metadata[metadata["type"] == "Categorical"]["name"].tolist()
-selected_cat_features = st.multiselect("Select Categorical Features for Counts:", cat_vars, default=cat_vars[:2])
+cat_vars: List[str] = metadata[metadata["type"] == "Categorical"]["name"].tolist()
+selected_cat_features: List[str] = st.multiselect("Select Categorical Features for Counts:", cat_vars, default=cat_vars[:2])
 
 if selected_cat_features:
     num_cols = 3
